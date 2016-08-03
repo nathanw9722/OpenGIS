@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/label.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+        <script src="js/leaflet.js"></script>
+        <script src="js/OSMBuildings-Leaflet.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/label.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/proj4.js"></script>
+        <script src="js/proj4leaflet.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="data/json_streetsTEST0.js"></script>
+        <script src="data/json_isgrdregion1.js"></script>
+        <script src="data/json_issearegion2.js"></script>
+        <script>
+        var crs = new L.Proj.CRS('EPSG:2039', '+proj=tmerc +lat_0=31.73439361111111 +lon_0=35.20451694444445 +k=1.0000067 +x_0=219529.584 +y_0=626907.39 +ellps=GRS80 +towgs84=-48,55,52,0,0,0,0 +units=m +no_defs', {
+            resolutions: [2800, 1400, 700, 350, 175, 84, 42, 21, 11.2, 5.6, 2.8, 1.4, 0.7, 0.35, 0.14, 0.07],
+        });
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        var map = L.map('map', {
+            crs: crs,
+            continuousWorld: false,
+            worldCopyJump: false, 
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[32.0122523822,34.6891812512],[32.1304339156,35.0027243882]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.addAttribution('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a>');
+        var feature_group = new L.featureGroup([]);
+        var bounds_group = new L.featureGroup([]);
+        var raster_group = new L.LayerGroup([]);
+        var initialOrder = new Array();
+        var layerOrder = new Array();
+        function stackLayers() {
+            for (index = 0; index < initialOrder.length; index++) {
+                map.removeLayer(initialOrder[index]);
+                map.addLayer(initialOrder[index]);
+            }
+            map.setMaxBounds(map.getBounds());
+        }
+        function restackLayers() {
+            for (index = 0; index < layerOrder.length; index++) {
+                layerOrder[index].bringToFront();
+            }
+        }
+        layerControl = L.control.layers({},{},{collapsed:false});
+        function pop_streetsTEST0(feature, layer) {
+            var popupContent = '<table><tr><td colspan="2">' + (feature.properties['STREET'] !== null ? Autolinker.link(String(feature.properties['STREET'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['FROMLEFT'] !== null ? Autolinker.link(String(feature.properties['FROMLEFT'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['TOLEFT'] !== null ? Autolinker.link(String(feature.properties['TOLEFT'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['FROMRIGHT'] !== null ? Autolinker.link(String(feature.properties['FROMRIGHT'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['TORIGHT'] !== null ? Autolinker.link(String(feature.properties['TORIGHT'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['STREETCODE'] !== null ? Autolinker.link(String(feature.properties['STREETCODE'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['OBJID'] !== null ? Autolinker.link(String(feature.properties['OBJID'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['USERID'] !== null ? Autolinker.link(String(feature.properties['USERID'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['FJUNCTION'] !== null ? Autolinker.link(String(feature.properties['FJUNCTION'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['TJUNCTION'] !== null ? Autolinker.link(String(feature.properties['TJUNCTION'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['LENGTH'] !== null ? Autolinker.link(String(feature.properties['LENGTH'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['ROADTYPE'] !== null ? Autolinker.link(String(feature.properties['ROADTYPE'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['ONEWAY'] !== null ? Autolinker.link(String(feature.properties['ONEWAY'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['F_ZLEV'] !== null ? Autolinker.link(String(feature.properties['F_ZLEV'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['T_ZLEV'] !== null ? Autolinker.link(String(feature.properties['T_ZLEV'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['FLANES'] !== null ? Autolinker.link(String(feature.properties['FLANES'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['TLANES'] !== null ? Autolinker.link(String(feature.properties['TLANES'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['INTENDED'] !== null ? Autolinker.link(String(feature.properties['INTENDED'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['CITYNAME'] !== null ? Autolinker.link(String(feature.properties['CITYNAME'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['CITYCODE'] !== null ? Autolinker.link(String(feature.properties['CITYCODE'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['AUTONOMY'] !== null ? Autolinker.link(String(feature.properties['AUTONOMY'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['REGULATION'] !== null ? Autolinker.link(String(feature.properties['REGULATION'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['ROADNAMEMZ'] !== null ? Autolinker.link(String(feature.properties['ROADNAMEMZ'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['DIRECTIONM'] !== null ? Autolinker.link(String(feature.properties['DIRECTIONM'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['STATUS'] !== null ? Autolinker.link(String(feature.properties['STATUS'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['ROADFUNCTI'] !== null ? Autolinker.link(String(feature.properties['ROADFUNCTI'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['FLAG'] !== null ? Autolinker.link(String(feature.properties['FLAG'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['IDENTIFIER'] !== null ? Autolinker.link(String(feature.properties['IDENTIFIER'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['ROADDIRECT'] !== null ? Autolinker.link(String(feature.properties['ROADDIRECT'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['CLEARSTREE'] !== null ? Autolinker.link(String(feature.properties['CLEARSTREE'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['REVERSTREE'] !== null ? Autolinker.link(String(feature.properties['REVERSTREE'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['CLEARCITYN'] !== null ? Autolinker.link(String(feature.properties['CLEARCITYN'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['REVERCITYN'] !== null ? Autolinker.link(String(feature.properties['REVERCITYN'])) : '') + '</td></tr></table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function doStylestreetsTEST0(feature) {
+            return {
+                weight: 1.04,
+                color: '#fdbf6f',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                opacity: 1.0
+            };
+        }
+        var json_streetsTEST0JSON = new L.geoJson(json_streetsTEST0, {
+            onEachFeature: pop_streetsTEST0,
+            style: doStylestreetsTEST0
+        });
+        layerOrder[layerOrder.length] = json_streetsTEST0JSON;
+        bounds_group.addLayer(json_streetsTEST0JSON);
+        initialOrder[initialOrder.length] = json_streetsTEST0JSON;
+        feature_group.addLayer(json_streetsTEST0JSON);
+        function pop_isgrdregion1(feature, layer) {
+            var popupContent = '<table><tr><td colspan="2">' + (feature.properties['objid'] !== null ? Autolinker.link(String(feature.properties['objid'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['userid'] !== null ? Autolinker.link(String(feature.properties['userid'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['gardenname'] !== null ? Autolinker.link(String(feature.properties['gardenname'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['grdcode'] !== null ? Autolinker.link(String(feature.properties['grdcode'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['gardentype'] !== null ? Autolinker.link(String(feature.properties['gardentype'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['area'] !== null ? Autolinker.link(String(feature.properties['area'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['perimeter'] !== null ? Autolinker.link(String(feature.properties['perimeter'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['cityname'] !== null ? Autolinker.link(String(feature.properties['cityname'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['citycode'] !== null ? Autolinker.link(String(feature.properties['citycode'])) : '') + '</td></tr></table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function doStyleisgrdregion1(feature) {
+            return {
+                weight: 1.04,
+                color: '#809848',
+                fillColor: '#badd69',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                opacity: 1.0,
+                fillOpacity: 1.0
+            };
+        }
+        var json_isgrdregion1JSON = new L.geoJson(json_isgrdregion1, {
+            onEachFeature: pop_isgrdregion1,
+            style: doStyleisgrdregion1
+        });
+        layerOrder[layerOrder.length] = json_isgrdregion1JSON;
+        bounds_group.addLayer(json_isgrdregion1JSON);
+        initialOrder[initialOrder.length] = json_isgrdregion1JSON;
+        feature_group.addLayer(json_isgrdregion1JSON);
+        function pop_issearegion2(feature, layer) {
+            var popupContent = '<table><tr><td colspan="2">' + (feature.properties['objid'] !== null ? Autolinker.link(String(feature.properties['objid'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['userid'] !== null ? Autolinker.link(String(feature.properties['userid'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['lakename'] !== null ? Autolinker.link(String(feature.properties['lakename'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['laketype'] !== null ? Autolinker.link(String(feature.properties['laketype'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['area'] !== null ? Autolinker.link(String(feature.properties['area'])) : '') + '</td></tr><tr><td colspan="2">' + (feature.properties['perimeter'] !== null ? Autolinker.link(String(feature.properties['perimeter'])) : '') + '</td></tr></table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function doStyleissearegion2(feature) {
+            return {
+                weight: 1.04,
+                color: '#728584',
+                fillColor: '#a5bfdd',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                opacity: 1.0,
+                fillOpacity: 1.0
+            };
+        }
+        var json_issearegion2JSON = new L.geoJson(json_issearegion2, {
+            onEachFeature: pop_issearegion2,
+            style: doStyleissearegion2
+        });
+        layerOrder[layerOrder.length] = json_issearegion2JSON;
+        bounds_group.addLayer(json_issearegion2JSON);
+        initialOrder[initialOrder.length] = json_issearegion2JSON;
+        feature_group.addLayer(json_issearegion2JSON);
+        raster_group.addTo(map);
+        feature_group.addTo(map);
+        L.control.scale({options: {position: 'bottomleft', maxWidth: 100, metric: true, imperial: false, updateWhenIdle: false}}).addTo(map);
+        stackLayers();
+        map.on('overlayadd', restackLayers);
+        </script>
+    </body>
+</html>
